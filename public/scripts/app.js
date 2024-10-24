@@ -4,6 +4,7 @@ const ideasList = document.getElementById('ideas-list');
 const sendBtn = document.getElementById('send-btn');
 const resetBtn = document.getElementById('reset-btn');
 const saveBtn = document.getElementById('save-btn');
+const continueBtn = document.getElementById('continue-btn');
 
 // Function to append a message to the chat window
 const appendMessage = (message, isBot = false) => {
@@ -26,23 +27,23 @@ sendBtn.addEventListener('click', async () => {
   const response = await fetch('/chat', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message }),
+    body: JSON.stringify({ message, action: 'initial' }),
   });
   
   const data = await response.json();
-  
-  appendMessage(data.botResponse, true);
+  appendMessage(data.response, true);
 });
 
 // Handle save button click
 saveBtn.addEventListener('click', async () => {
-    const idea = chatInput.value; // 
+    const messages = chatWindow.children;
+    const idea = messages[messages.length - 2].textContent;
     if (!idea.trim()) return; // Prevent saving empty ideas
   
-    const response = await fetch('/save-idea', { // Correct endpoint for saving ideas
+    const response = await fetch('/chat', { // Correct endpoint for saving ideas
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ idea }),
+      body: JSON.stringify({ idea, action: 'save' }),
     });
   
     const data = await response.json();
@@ -81,3 +82,26 @@ const updateIdeasList = (ideas) => {
     ideasList.appendChild(li);
   });
 };
+
+continueBtn.addEventListener('click', async () => {
+  const message = chatWindow.lastElementChild.textContent; // Get the text from the chat input field
+  if (!message.trim()) return; // Prevent sending empty messages
+
+  chatWindow.lastElementChild.remove(); // Remove the last message from the chat window
+  appendMessage(message);
+  // Send the message to the backend chatbot
+  const response = await fetch('/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message, action: 'continue' }),
+  });
+
+  const data = await response.json();
+
+  // Append the chatbot's response to the chat window
+  if (data.botResponse) {
+    appendMessage(data.botResponse, true);
+  } else {
+    console.error('No bot response received');
+  }
+});
