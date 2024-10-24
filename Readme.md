@@ -7,6 +7,7 @@ This is a simple chatbot app built using Node.js and Express.js. The app allows 
 Before running the app locally, make sure you have the following installed:
 
 Node.js (version 12 or higher)
+
 npm (version 6 or higher)
 
 ## Getting Started
